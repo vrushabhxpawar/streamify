@@ -43,9 +43,11 @@ const Navbar = () => {
 
 
             <div className='avatar'>
-              <div className='size-8 rounded-full'>
+              <Link to="/update">
+              <div className='size-8 rounded-full hover:cursor-pointer'>
                 <img src={authUser?.profilePic} alt='User Avatar' />
               </div>
+              </Link>
             </div>
             
             <button className='btn btn-ghost btn-circle' onClick={logoutMutation}>

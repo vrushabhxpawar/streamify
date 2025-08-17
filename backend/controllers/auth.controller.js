@@ -151,10 +151,14 @@ export const onBoard = async (req, res, next) => {
         ].filter(Boolean),
       });
     }
-    const updatedUser = await User.findByIdAndUpdate(userId, {
-      ...req.body,
-      isOnboarded: true,
-    }, {new : true});
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        ...req.body,
+        isOnboarded: true,
+      },
+      { new: true }
+    );
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found!" });
@@ -165,7 +169,7 @@ export const onBoard = async (req, res, next) => {
         id: updatedUser._id.toString(),
         name: updatedUser.fullname,
         image: updatedUser.profilePic || "",
-      })
+      });
       console.log(`Stream User updated for ${updatedUser.fullname}`);
     } catch (streamError) {
       console.log("Error updating Stream user during onBoarding", streamError);
@@ -174,9 +178,71 @@ export const onBoard = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "User onboarded successfully!",
-      user: updatedUser});
+      user: updatedUser,
+    });
   } catch (error) {
     console.log("Onboarding error:", error.message);
+    res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
+export const updateUser = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    if (!userId) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    const { fullname, bio, nativeLanguage, learningLanguage, location } =
+      req.body;
+    if (
+      !fullname ||
+      !bio ||
+      !nativeLanguage ||
+      !learningLanguage ||
+      !location
+    ) {
+      return res.status(400).json({
+        message: "All fields are required!",
+        missingFields: [
+          !fullname && "fullname",
+          !bio && "bio",
+          !nativeLanguage && "nativeLanguage",
+          !learningLanguage && "learningLanguage",
+          !location && "location",
+        ].filter(Boolean),
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        ...req.body,
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    try {
+      await upsertStreamUser({
+        id: updatedUser._id.toString(),
+        name: updatedUser.fullname,
+        image: updatedUser.profilePic || "",
+      });
+      console.log(`Stream User updated for ${updatedUser.fullname}`);
+    } catch (streamError) {
+      console.log("Error updating Stream user during onBoarding", streamError);
+    }
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully!",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.log("Updating user error:", error.message);
     res.status(500).json({ message: "Internal server error!" });
   }
 };

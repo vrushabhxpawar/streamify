@@ -10,7 +10,8 @@ import { Toaster } from "react-hot-toast";
 import PageLoader from "./components/PageLoader.jsx";
 import useAuthuser from "../hooks/useAuthuser.js";
 import Layout from "../src/components/Layout.jsx";
-import Friends from "../src/pages/Friends.jsx"
+import Friends from "../src/pages/Friends.jsx";
+import UpdatePage from "../src/pages/UpdatePage.jsx";
 import { useThemeStore } from "../src/store/useThemeStore.js";
 
 export default function App() {
@@ -117,6 +118,16 @@ export default function App() {
               <Layout showSidebar>
                 <Friends />
               </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
+            )
+          }
+        />
+        <Route
+          path="/update"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <UpdatePage />
             ) : (
               <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
             )

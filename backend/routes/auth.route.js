@@ -1,5 +1,5 @@
 import express from "express";
-import {signup, login , logout} from "../controllers/auth.controller.js";
+import {signup, login , logout, updateUser} from "../controllers/auth.controller.js";
 import {protectRoute} from "../middlewares/auth.middleware.js";
 import { onBoard } from "../controllers/auth.controller.js";
 
@@ -11,7 +11,10 @@ router.post("/logout", logout);
 
 router.post("/onboarding", protectRoute, onBoard);
 
+router.put("/update", protectRoute, updateUser);
+
 router.get("/me", protectRoute, (req, res) =>{
   res.status(200).json({ message : "User profile fetched successfully!", user: req.user });
 })
+
 export default router;

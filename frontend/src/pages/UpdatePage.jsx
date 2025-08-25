@@ -16,7 +16,6 @@ import { LANGUAGES } from "../../constants/index.js";
 const UpdatePage = () => {
   const navigate = useNavigate();
   const { authUser } = useAuthuser();
-  console.log(authUser);
   const queryClient = useQueryClient();
 
   const [formState, setFormState] = useState({

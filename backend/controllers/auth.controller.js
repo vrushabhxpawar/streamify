@@ -38,6 +38,7 @@ export const signup = async (req, res) => {
       profilePic: randomAvatar,
     });
 
+    await newUser.save()
     try {
       await upsertStreamUser({
         id: newUser._id.toString(),
@@ -70,6 +71,7 @@ export const signup = async (req, res) => {
       user: newUser,
     });
   } catch (error) {
+    console.log(error)
     console.log(error.message);
     res.status(500).json({ message: "Internal server error!" });
   }

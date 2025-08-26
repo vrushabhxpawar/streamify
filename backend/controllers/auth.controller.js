@@ -1,6 +1,7 @@
 import { upsertStreamUser } from "../lib/stream.js";
 import User from "../model/User.js";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../lib/emailVerification.js"
 
 export const signup = async (req, res) => {
   const { fullname, email, password } = req.body;
@@ -29,6 +30,7 @@ export const signup = async (req, res) => {
     }
 
     const idx = Math.floor(Math.random() * 100) + 1;
+    const code = Math.floor(Math.random()* 9000) + 1;
     const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
 
     const newUser = await User.create({
@@ -36,9 +38,13 @@ export const signup = async (req, res) => {
       fullname,
       password,
       profilePic: randomAvatar,
+      verificationCode : code,
     });
 
     await newUser.save()
+
+    await sendEmail(newUser.email, code)
+
     try {
       await upsertStreamUser({
         id: newUser._id.toString(),
@@ -71,11 +77,37 @@ export const signup = async (req, res) => {
       user: newUser,
     });
   } catch (error) {
-    console.log(error)
     console.log(error.message);
     res.status(500).json({ message: "Internal server error!" });
   }
 };
+
+export const verifyEmail = async(req, res) => {
+  try {
+    const { verificationCode } = req.body
+
+    if(!verificationCode){
+      return res.status(400).json({ message: "Verification code is missing!" });
+    }
+    
+    const verifiedUser = await User.findOne({ verificationCode })
+
+    if(!verifiedUser){
+      return res.status(400).json({ message: "Invalid or expired Verification code!" });
+    }
+
+    verifiedUser.isVerified = true 
+    verifiedUser.verificationCode = undefined
+
+    await verifiedUser.save()
+
+    return res.status(201).json({ message: "Email verified successfully!" });
+    
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: "Internal server error!" });
+  }
+}
 
 export const login = async (req, res) => {
   try {

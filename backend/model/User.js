@@ -11,7 +11,9 @@ const userSchema = new mongoose.Schema(
     nativeLanguage: { type: String, default: "" },
     learningLanguage: { type: String, default: "" },
     isOnboarded: { type: Boolean, default: false },
-    location : { type : String,},
+    location: { type: String },
+    isVerified : { type : Boolean, default : false},
+    verificationCode : String,
     friends: [
       {
         type: mongoose.Schema.Types.ObjectId,

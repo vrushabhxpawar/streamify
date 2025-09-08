@@ -165,7 +165,7 @@ export const Welcome_Email_Template = `
               <p>If you need any help, don’t hesitate to contact us. We’re here to support you every step of the way.</p>
           </div>
           <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} Streamify. All rights reserved.</p>
           </div>
       </div>
   </body>

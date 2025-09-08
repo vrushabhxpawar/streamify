@@ -13,6 +13,7 @@ import Layout from "../src/components/Layout.jsx";
 import Friends from "../src/pages/Friends.jsx";
 import UpdatePage from "../src/pages/UpdatePage.jsx";
 import { useThemeStore } from "../src/store/useThemeStore.js";
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 
 export default function App() {
   const { isLoading, authUser } = useAuthuser();
@@ -23,7 +24,18 @@ export default function App() {
   }
 
   const isAuthenticated = Boolean(authUser);
+  const isVerified = authUser?.isVerified;
   const isOnboarded = authUser?.isOnboarded;
+
+  // 🛠️ Guard: global redirection rules
+  const getRedirect = () => {
+    if (!isAuthenticated) return "/login";
+    if (!isVerified) return "/verify";
+    if (!isOnboarded) return "/onboarding";
+    return null;
+  };
+
+  const redirect = getRedirect();
 
   return (
     <div className="h-screen text-5xl" data-theme={theme}>
@@ -32,7 +44,44 @@ export default function App() {
       </div>
 
       <Routes>
+        {/* Public Routes */}
         <Route
+          path="/signup"
+          element={
+            !isAuthenticated ? <SignupPage /> : <Navigate to={"/verify"} />
+          }
+        />
+        <Route
+          path="/login"
+          element={!isAuthenticated ? <LoginPage /> : <Navigate to={"/"} />}
+        />
+
+        {/* Verification Route */}
+        <Route
+          path="/verify"
+          element={
+            isAuthenticated && !isVerified ? (
+              <VerifyEmailPage />
+            ) : (
+              <Navigate to={redirect || "/onboarding"} />
+            )
+          }
+        />
+
+        {/* Onboarding Route */}
+        <Route
+          path="/onboarding"
+          element={
+            isAuthenticated && isVerified && !isOnboarded ? (
+              <OnboardingPage />
+            ) : (
+              <Navigate to={"/"} />
+            )
+          }
+        />
+
+        {/* Protected Routes (Authenticated + Verified + Onboarded) */}
+          <Route
           path="/"
           element={
             isAuthenticated && isOnboarded ? (
@@ -41,39 +90,6 @@ export default function App() {
               </Layout>
             ) : (
               <Navigate to={!isAuthenticated ? "/signup" : "/onboarding"} />
-            )
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            !isAuthenticated ? (
-              <SignupPage />
-            ) : (
-              <Navigate to={isOnboarded ? "/" : "/onboarding"} />
-            )
-          }
-        />
-
-        <Route
-          path="/login"
-          element={
-            !isAuthenticated ? (
-              <LoginPage />
-            ) : (
-              <Navigate to={isOnboarded ? "/" : "/onboarding"} />
-            )
-          }
-        />
-        <Route
-          path="/onboarding"
-          element={
-            !isAuthenticated ? (
-              <SignupPage />
-            ) : isAuthenticated && !isOnboarded ? (
-              <OnboardingPage />
-            ) : (
-              <Navigate to="/" />
             )
           }
         />

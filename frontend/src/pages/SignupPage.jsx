@@ -5,7 +5,6 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { signup } from "../lib/api.js";
 import { useNavigate } from "react-router-dom";
 
-
 const SignupPage = () => {
   const [signupData, setSignupData] = React.useState({
     fullname: "",
@@ -13,17 +12,21 @@ const SignupPage = () => {
     password: "",
   });
 
-  const queryClient =  useQueryClient();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-const { mutate: signupMutation, isPending, error } = useMutation({
-  mutationFn: signup,
-  onSuccess: (data) => {
-    localStorage.setItem("token", data.token); // ✅ Store token
-    queryClient.setQueryData(["authUser"], { user: data.user }); // ✅ Update cache
-    navigate(data.user.isOnboarded ? "/" : "/onboarding"); // ✅ Redirect
-  },
-});
+  const {
+    mutate: signupMutation,
+    isPending,
+    error,
+  } = useMutation({
+    mutationFn: signup,
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token); // ✅ Store token
+      queryClient.setQueryData(["authUser"], { user: data.user }); // ✅ Update cache
+      navigate("/verify")
+    },
+  });
 
   const handleSignup = (e) => {
     e.preventDefault();
@@ -125,36 +128,52 @@ const { mutate: signupMutation, isPending, error } = useMutation({
                       required
                     />
                     <p className="text-xs opacity-70 mt-1">
-                      Password must be at least 6 characters long 
+                      Password must be at least 6 characters long
                     </p>
                   </div>
                   {/* terms and conditions */}
                   <div className="form-control">
                     <label className="label cursor-pointer justify-start gap-2">
-                      <input type="checkbox" className="checkbox checkbox-sm" required />
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm"
+                        required
+                      />
                       <span className="text-xs leading-tight">
-                        I agree to the {" "}
-                        <span className="text-primary hover:underline">terms of service</span> and{" "}
-                        <span className="text-primary hover:underline">Privacy Policy</span>
+                        I agree to the{" "}
+                        <span className="text-primary hover:underline">
+                          terms of service
+                        </span>{" "}
+                        and{" "}
+                        <span className="text-primary hover:underline">
+                          Privacy Policy
+                        </span>
                       </span>
                     </label>
                   </div>
                 </div>
-                <button className="btn btn-primary w-full text-sm" type="submit">
-                  {isPending ? 
-                  (
+                <button
+                  className="btn btn-primary w-full text-sm"
+                  type="submit"
+                >
+                  {isPending ? (
                     <>
-                    <span className="loading loading-spinner loading-sm"></span>
+                      <span className="loading loading-spinner loading-sm"></span>
                     </>
-                  ) :
-                  ("Create Account")
-                  }
+                  ) : (
+                    "Create Account"
+                  )}
                 </button>
                 <div className="text-center mt-4">
                   <p className="text-sm">
                     Already have an account?{" "}
                     <span className="text-primary hover:underline">
-                      <Link to="/login" className="text-primary hover:underline">Sign in</Link>
+                      <Link
+                        to="/login"
+                        className="text-primary hover:underline"
+                      >
+                        Sign in
+                      </Link>
                     </span>
                   </p>
                 </div>
@@ -167,7 +186,7 @@ const { mutate: signupMutation, isPending, error } = useMutation({
         <div className="hidden lg:flex lg:w-1/2 bg-primary/10 items-center justify-center">
           <div className="max-w-md p-8">
             <div className="relative aspect-square max-w-sm mx-auto">
-              <img src="/Videocall.svg" className="h-full w-full"/>
+              <img src="/Videocall.svg" className="h-full w-full" />
             </div>
 
             <div className="text-center mt-6 space-y-3">
@@ -175,11 +194,11 @@ const { mutate: signupMutation, isPending, error } = useMutation({
                 Connect With language partners around the world
               </h2>
               <p className=" text-sm opacity-70">
-                Practise speaking with native speakers, make new friends, and learn together in real-time.
+                Practise speaking with native speakers, make new friends, and
+                learn together in real-time.
               </p>
             </div>
           </div>
-
         </div>
       </div>
     </div>

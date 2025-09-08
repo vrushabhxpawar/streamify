@@ -1,7 +1,7 @@
 import { upsertStreamUser } from "../lib/stream.js";
 import User from "../model/User.js";
 import jwt from "jsonwebtoken";
-import { sendEmail } from "../lib/emailVerification.js"
+import { sendEmail, sendWelcomeEmail } from "../lib/emailVerification.js"
 
 export const signup = async (req, res) => {
   const { fullname, email, password } = req.body;
@@ -30,7 +30,7 @@ export const signup = async (req, res) => {
     }
 
     const idx = Math.floor(Math.random() * 100) + 1;
-    const code = Math.floor(Math.random()* 9000) + 1;
+    const code = Math.floor(100000 + Math.random() * 900000);
     const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
 
     const newUser = await User.create({
@@ -82,32 +82,41 @@ export const signup = async (req, res) => {
   }
 };
 
-export const verifyEmail = async(req, res) => {
+export const verifyEmail = async (req, res) => {
   try {
-    const { verificationCode } = req.body
+    let { verificationCode } = req.body;
 
-    if(!verificationCode){
+    // 🔹 If frontend accidentally sends { verificationCode: { verificationCode: '108146' } }
+    if (verificationCode && typeof verificationCode === "object") {
+      verificationCode = verificationCode.verificationCode;
+    }
+
+    if (!verificationCode) {
       return res.status(400).json({ message: "Verification code is missing!" });
     }
-    
-    const verifiedUser = await User.findOne({ verificationCode })
 
-    if(!verifiedUser){
+    const verifiedUser = await User.findOne({ verificationCode });
+
+    if (!verifiedUser) {
       return res.status(400).json({ message: "Invalid or expired Verification code!" });
     }
 
-    verifiedUser.isVerified = true 
-    verifiedUser.verificationCode = undefined
+    verifiedUser.isVerified = true;
+    verifiedUser.verificationCode = undefined;
 
-    await verifiedUser.save()
+    await verifiedUser.save();
 
-    return res.status(201).json({ message: "Email verified successfully!" });
-    
+    await sendWelcomeEmail(verifiedUser.email, verifiedUser.fullname);
+
+    return res.status(201).json({
+      message: "Email verified successfully!",
+      user: verifiedUser,
+    });
   } catch (error) {
-    console.log(error.message);
+    console.error("Email verification error:", error);
     res.status(500).json({ message: "Internal server error!" });
   }
-}
+};
 
 export const login = async (req, res) => {
   try {

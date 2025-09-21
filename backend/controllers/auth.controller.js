@@ -119,7 +119,6 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const resendOtp = async(req, res) => {
-  console.log("hit")
   try {
     const code = Math.floor(100000 + Math.random() * 900000);
     

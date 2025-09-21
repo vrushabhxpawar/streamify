@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { verifyEmail, resendOtp } from "../lib/api"; // ✅ you'll create these API functions
+import { verifyEmail, resendOtp } from "../lib/api.js"; // ✅ you'll create these API functions
 import { ShipWheelIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const VerifyEmailPage = () => {
   const [otp, setOtp] = useState("");
@@ -21,13 +22,10 @@ const VerifyEmailPage = () => {
     },
   });
 
-  const {
-    mutate: resendOtpMutation,
-    isPending: isResending,
-  } = useMutation({
+  const { mutate: resendOtpMutation, isPending: isResending } = useMutation({
     mutationFn: resendOtp,
     onSuccess: () => {
-      alert("A new OTP has been sent to your email.");
+      toast.success("A new OTP has been sent to your email.");
     },
   });
 
@@ -37,7 +35,10 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center p-4" data-theme="forest">
+    <div
+      className="h-screen flex items-center justify-center p-4"
+      data-theme="forest"
+    >
       <div className="border border-primary/25 w-full max-w-md bg-base-100 rounded-xl shadow-lg p-6">
         {/* logo */}
         <div className="mb-6 flex items-center justify-center gap-2">
@@ -47,14 +48,18 @@ const VerifyEmailPage = () => {
           </span>
         </div>
 
-        <h2 className="text-xl font-semibold mb-2 text-center">Verify Your Email</h2>
+        <h2 className="text-xl font-semibold mb-2 text-center">
+          Verify Your Email
+        </h2>
         <p className="text-sm opacity-70 text-center mb-4">
           Enter the 6-digit code we sent to your email.
         </p>
 
         {error && (
           <div className="alert alert-error mb-4">
-            <span className="text-sm">{error.response?.data?.message || "Invalid OTP"}</span>
+            <span className="text-sm">
+              {error.response?.data?.message || "Invalid OTP"}
+            </span>
           </div>
         )}
 
@@ -84,6 +89,7 @@ const VerifyEmailPage = () => {
 
         <div className="text-center mt-4">
           <button
+            type="button"
             className="btn btn-link text-sm"
             onClick={() => resendOtpMutation()}
             disabled={isResending}

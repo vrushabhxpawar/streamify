@@ -1,16 +1,18 @@
-import React from "react";
-import { ShipWheelIcon } from "lucide-react";
+import React, { useState } from "react";
+import { ShipWheelIcon, EyeClosed, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { signup } from "../lib/api.js";
 import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
-  const [signupData, setSignupData] = React.useState({
+  const [signupData, setSignupData] = useState({
     fullname: "",
     email: "",
     password: "",
   });
+
+  const [hidden, setHidden] = useState(true);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ const SignupPage = () => {
     onSuccess: (data) => {
       localStorage.setItem("token", data.token); // ✅ Store token
       queryClient.setQueryData(["authUser"], { user: data.user }); // ✅ Update cache
-      navigate("/verify")
+      navigate("/verify");
     },
   });
 
@@ -110,12 +112,26 @@ const SignupPage = () => {
                     />
                   </div>
                   {/* password input */}
-                  <div className="form-control w-full">
+                  <div className="form-control w-full relative">
                     <label htmlFor="" className="label">
                       <span className="label-text">Password</span>
                     </label>
+                    {hidden ? (
+                      <EyeClosed
+                        size={18}
+                        className="absolute top-12 right-5 hover:cursor-pointer mt-1"
+                        onClick={() => setHidden(!hidden)}
+                      />
+                    ) : (
+                      <Eye
+                        size={18}
+                        className="absolute top-12 right-5 hover:cursor-pointer mt-1"
+                        onClick={() => setHidden(!hidden)}
+                      />
+                    )}
+
                     <input
-                      type="password"
+                      type={hidden ? "password" : "text"}
                       className="input input-bordered w-full"
                       placeholder="*********"
                       value={signupData.password}

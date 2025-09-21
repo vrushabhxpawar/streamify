@@ -118,6 +118,27 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+export const resendOtp = async(req, res) => {
+  console.log("hit")
+  try {
+    const code = Math.floor(100000 + Math.random() * 900000);
+    
+    let user = req.user;
+    if(!user) {
+      return res.status(400).json({ message : "User not found"})
+    }
+
+    user = await User.findByIdAndUpdate(user._id, { verificationCode : code }, { new : true })
+
+    await sendEmail(user.email, code)
+
+    return res.status(200).json({ message : "Otp sent"});
+  } catch (error) {
+    console.log("Error in resendOtp controller", error.message)
+    return res.status(500).json({ message : "Internal server error"})
+  }
+}
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;

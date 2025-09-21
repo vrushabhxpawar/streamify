@@ -12,8 +12,8 @@ export const verifyEmail = async(verificationCode) => {
 }
 
 export const resendOtp = async () => {
-  const { data } = await axios.post("/api/auth/resend-otp");
-  return data;
+  const response = await axiosInstance.put("/auth/resend-otp");
+  return response.data;
 };
 
 export const login = async (loginData) => {

@@ -55,13 +55,11 @@
 ## ⚙️ Installation & Setup
 
 1. **Clone the repository**
-     ```bash
      
          git clone https://github.com/vrushabhxpawar/streamify.git
          cd streamify
 2. **Install Dependencies**
-     ```bash
-     
+
         # Backend
         cd server
         npm install
@@ -71,8 +69,7 @@
         npm install
      
 3.**Setup environment variables**
-     ```bash
-     
+
           MONGO_URI=your_mongodb_connection_string
           JWT_SECRET=your_secret_key
           STREAM_API_KEY=your_stream_api_key
@@ -82,7 +79,6 @@
 
 
 4.**Run the application**
-    ```bash
     
         # Start backend
         cd server

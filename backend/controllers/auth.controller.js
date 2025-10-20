@@ -4,9 +4,14 @@ import jwt from "jsonwebtoken";
 import { sendEmail, sendWelcomeEmail } from "../lib/emailVerification.js";
 
 export const signup = async (req, res) => {
-  const { fullname, email, password } = req.body;
+  let { fullname, email, password } = req.body;
 
   try {
+    // Sanitize inputs
+    fullname = fullname?.trim();
+    email = email?.trim().toLowerCase();
+
+    // Validation
     if (!fullname || !email || !password) {
       return res.status(400).json({ message: "All fields are required!" });
     }
@@ -14,7 +19,7 @@ export const signup = async (req, res) => {
     if (password.length < 6) {
       return res
         .status(400)
-        .json({ message: "Password must be atleast 6 characters!" });
+        .json({ message: "Password must be at least 6 characters!" });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,18 +27,21 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
+    // Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
         .status(400)
-        .json({ message: "Email already exists, please use a diffrent one! " });
+        .json({ message: "Email already exists, please use a different one!" });
     }
 
+    // Generate random data
     const idx = Math.floor(Math.random() * 100) + 1;
     const code = Math.floor(100000 + Math.random() * 900000);
     const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
 
-    const newUser = User({
+    // Create user
+    const newUser = new User({
       email,
       fullname,
       password,
@@ -43,27 +51,16 @@ export const signup = async (req, res) => {
 
     await newUser.save();
 
-    await sendEmail(newUser.email, code);
+    console.log(`✅ User created: ${newUser._id} - ${email}`);
 
-    try {
-      await upsertStreamUser({
-        id: newUser._id.toString(),
-        name: newUser.fullname,
-        image: newUser.profilePic || "",
-      });
-      console.log(`Stream User created for ${newUser.fullname}`);
-    } catch (error) {
-      console.log("Error creating Stream user", error);
-    }
-
+    // Generate JWT token
     const token = jwt.sign(
       { userId: newUser._id },
       process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "7d" }
     );
 
+    // Set secure cookie
     res.cookie("token", token, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -71,13 +68,53 @@ export const signup = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
     });
 
+    // Send response IMMEDIATELY (before async operations)
     res.status(200).json({
       success: true,
-      message: "User signed in successfully!",
-      user: newUser,
+      message: "User signed up successfully!",
+      user: {
+        _id: newUser._id,
+        fullname: newUser.fullname,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+        isVerified: newUser.isVerified,
+      },
     });
+
+    // Send verification email in background (non-blocking)
+    setImmediate(async () => {
+      try {
+        await sendEmail(newUser.email, code);
+        console.log(`📧 Verification email sent to: ${email}`);
+      } catch (error) {
+        console.error(`❌ Email sending failed for ${email}:`, error.message);
+      }
+    });
+
+    // Create Stream user in background (non-blocking)
+    setImmediate(async () => {
+      try {
+        await upsertStreamUser({
+          id: newUser._id.toString(),
+          name: newUser.fullname,
+          image: newUser.profilePic || "",
+        });
+        console.log(`💬 Stream user created for ${newUser.fullname}`);
+      } catch (error) {
+        console.error(`❌ Stream user creation failed:`, error.message);
+      }
+    });
+
   } catch (error) {
-    console.log(error.message);
+    console.error("❌ Signup error:", error);
+    
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: "Email already exists, please use a different one!" 
+      });
+    }
+
     res.status(500).json({ message: "Internal server error!" });
   }
 };

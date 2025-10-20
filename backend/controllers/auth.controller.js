@@ -1,7 +1,7 @@
 import { upsertStreamUser } from "../lib/stream.js";
 import User from "../model/User.js";
 import jwt from "jsonwebtoken";
-import { sendEmail, sendWelcomeEmail } from "../lib/emailVerification.js"
+import { sendEmail, sendWelcomeEmail } from "../lib/emailVerification.js";
 
 export const signup = async (req, res) => {
   const { fullname, email, password } = req.body;
@@ -33,17 +33,17 @@ export const signup = async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000);
     const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
 
-    const newUser = await User.create({
+    const newUser = User({
       email,
       fullname,
       password,
       profilePic: randomAvatar,
-      verificationCode : code,
+      verificationCode: code,
     });
 
-    await newUser.save()
+    await newUser.save();
 
-    await sendEmail(newUser.email, code)
+    await sendEmail(newUser.email, code);
 
     try {
       await upsertStreamUser({
@@ -98,7 +98,9 @@ export const verifyEmail = async (req, res) => {
     const verifiedUser = await User.findOne({ verificationCode });
 
     if (!verifiedUser) {
-      return res.status(400).json({ message: "Invalid or expired Verification code!" });
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired Verification code!" });
     }
 
     verifiedUser.isVerified = true;
@@ -118,25 +120,29 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
-export const resendOtp = async(req, res) => {
+export const resendOtp = async (req, res) => {
   try {
     const code = Math.floor(100000 + Math.random() * 900000);
-    
+
     let user = req.user;
-    if(!user) {
-      return res.status(400).json({ message : "User not found"})
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
 
-    user = await User.findByIdAndUpdate(user._id, { verificationCode : code }, { new : true })
+    user = await User.findByIdAndUpdate(
+      user._id,
+      { verificationCode: code },
+      { new: true }
+    );
 
-    await sendEmail(user.email, code)
+    await sendEmail(user.email, code);
 
-    return res.status(200).json({ message : "Otp sent"});
+    return res.status(200).json({ message: "Otp sent" });
   } catch (error) {
-    console.log("Error in resendOtp controller", error.message)
-    return res.status(500).json({ message : "Internal server error"})
+    console.log("Error in resendOtp controller", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 export const login = async (req, res) => {
   try {

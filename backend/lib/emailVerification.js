@@ -4,7 +4,7 @@ import { Verification_Email_Template, Welcome_Email_Template } from "./emailTemp
 const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
-  port: 587,
+  port: 2525,
   secure: false,
   auth: {
     user: "vrushabhpawar05@gmail.com",

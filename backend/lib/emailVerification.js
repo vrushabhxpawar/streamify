@@ -1,29 +1,28 @@
-import nodemailer from "nodemailer"
-import { Verification_Email_Template, Welcome_Email_Template } from "./emailTemplate.js"
+import nodemailer from "nodemailer";
+import { Verification_Email_Template, Welcome_Email_Template } from "./emailTemplate.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  host: "smtp.gmail.com",
-  port: 2525,
-  secure: false,
   auth: {
-    user: "vrushabhpawar05@gmail.com",
-    pass: "opyz miry yopl txds",
+    user: process.env.SMTP_USER,        // e.g. vrushabhpawar05@gmail.com
+    pass: process.env.SMTP_PASS,        // 16-char Google App Password (no spaces)
   },
+  // optional debug/logging
+  logger: true,
+  debug: true
 });
 
 export const sendEmail = async (receipient, verificationCode) => {
   try {
     const info = await transporter.sendMail({
-      from: '"Streamify" <vrushabhpawar05@gmail.com>', // sender address
-      to: receipient, // list of receivers
-      subject: "Verify your Email", // Subject line
-      text: "Verify your email", // plain text body
-      html: Verification_Email_Template.replace("{verificationCode}", verificationCode), 
+      from: `"Streamify" <${process.env.FROM_EMAIL}>`,
+      to: receipient,
+      subject: "Verify your Email",
+      text: "Verify your email",
+      html: Verification_Email_Template.replace("{verificationCode}", verificationCode),
     });
 
     console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   } catch (err) {
     console.error("Error while sending mail", err);
   }
@@ -32,15 +31,14 @@ export const sendEmail = async (receipient, verificationCode) => {
 export const sendWelcomeEmail = async (receipient, fullname) => {
   try {
     const info = await transporter.sendMail({
-      from: '"Streamify" <vrushabhpawar05@gmail.com>', // sender address
-      to: receipient, // list of receivers
-      subject: "Welcome email", // Subject line
-      text: "Welcome email", // plain text body
-      html: Welcome_Email_Template.replace("{name}", fullname), 
+      from: `"Streamify" <${process.env.FROM_EMAIL}>`,
+      to: receipient,
+      subject: "Welcome email",
+      text: "Welcome email",
+      html: Welcome_Email_Template.replace("{name}", fullname),
     });
 
     console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   } catch (err) {
     console.error("Error while sending mail", err);
   }

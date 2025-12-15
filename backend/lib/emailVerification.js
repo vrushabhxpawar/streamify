@@ -1,11 +1,13 @@
+import dotenv from "dotenv";
+dotenv.config();
 import nodemailer from "nodemailer";
 import { Verification_Email_Template, Welcome_Email_Template } from "./emailTemplate.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,        // e.g. vrushabhpawar05@gmail.com
-    pass: process.env.SMTP_PASS,        // 16-char Google App Password (no spaces)
+    user: "vrushabhpawar05@gmail.com",
+    pass: "opyz miry yopl txds",        
   },
   // optional debug/logging
   logger: true,

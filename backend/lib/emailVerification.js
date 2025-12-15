@@ -1,18 +1,20 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: "../.env" });
 import nodemailer from "nodemailer";
-import { Verification_Email_Template, Welcome_Email_Template } from "./emailTemplate.js";
+import {
+  Verification_Email_Template,
+  Welcome_Email_Template,
+} from "./emailTemplate.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "vrushabhpawar05@gmail.com",
-    pass: "opyz miry yopl txds",        
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
-  // optional debug/logging
-  logger: true,
-  debug: true
 });
+
+// console.log(process.env.SMTP_PASS);
 
 export const sendEmail = async (receipient, verificationCode) => {
   try {
@@ -21,7 +23,10 @@ export const sendEmail = async (receipient, verificationCode) => {
       to: receipient,
       subject: "Verify your Email",
       text: "Verify your email",
-      html: Verification_Email_Template.replace("{verificationCode}", verificationCode),
+      html: Verification_Email_Template.replace(
+        "{verificationCode}",
+        verificationCode
+      ),
     });
 
     console.log("Message sent: %s", info.messageId);

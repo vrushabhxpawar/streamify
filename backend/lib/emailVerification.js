@@ -7,14 +7,14 @@ import {
 } from "./emailTemplate.js";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.resend.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: "resend",
+    pass: process.env.RESEND_API_KEY,
   },
 });
-
-// console.log(process.env.SMTP_PASS);
 
 export const sendEmail = async (receipient, verificationCode) => {
   try {
